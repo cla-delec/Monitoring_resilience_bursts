@@ -1,9 +1,14 @@
-%model harvesting2_noise_inc.ini
-nrep=100;
-length=8000;
-resolution=length;
-dist_min=0.5;
-dist_max=2.2;
+%Model: harvesting2_noise_inc.ini
+%load from Models/Overharvesting_model
+%The model has been implemented with frind for matlab
+%https://git.wageningenur.nl/sparcs/grind-for-matlab/-/tree/current-version
+
+nrep=100; %number of repetitions
+length=8000; %length of the tim series (days)
+resolution=length*3; %how many data points per day
+cs=0.5; %bifurcation parameter - start value
+ce=2.2; %bifurcation parameter - end value
+%to generate stationary time series: set ca to 0, and cs to the desired value of c
 
 data_big=zeros(resolution,nrep);
 
@@ -17,3 +22,6 @@ for cur_rep=1:nrep
 end
 
 save("data/huge_dataset_vegetation_rep_daily.mat",'data_big');
+
+c_values=outfun('c'); %save c values over time
+save("data/time_series_c.mat",'c_values');
