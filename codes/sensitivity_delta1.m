@@ -1,4 +1,7 @@
 %model harvesting2_noise_inc.ini
+%This program measure the true positive rate depending on Delta_1 (interval
+%between two samples)
+%We measure that for two values of Delta_2 (interval between two bursts)
 
 %%%%%%%%%%%%% LOAD THE DATA
 
@@ -15,9 +18,11 @@ length_bursts=1000; %total length of the data
 l_bursts=floor(length_bursts/n_bursts); %length of one burst
 res=3;
 
-low_delta2=400;
-high_delta2=1000;
+%values of Delta_2
+low_delta2=1000;
+high_delta2=12000;
 
+%Delta_1 values used for the calculations
 n_delta1=20;
 values_delta1=1:n_delta1;
 
@@ -39,12 +44,14 @@ for cur_delta1=1:n_delta1
             data_cur_high_delta2=[]; groups=[];
             for i=1:n_bursts
                 indexes_data_cur=indexes_data-(i-1)*(high_delta2+l_bursts);
-                data_cur_high_delta2=cat(1, data_big(indexes_data_cur,rep), data_cur_high_delta2);
-                groups=[repelem((n_bursts-i+1),l_bursts), groups];
+                data_cur_high_delta2=cat(1, data_big(indexes_data_cur,rep), data_cur_high_delta2); %subsample data from the big dataset
+                groups=[repelem((n_bursts-i+1),l_bursts), groups]; %create the indexes needed for generic_ews_fixed
             end
 
             result_high_delta2=generic_ews_fixed(data_cur_high_delta2,'grouping',groups','slopekind','ts');
-            cislope_high_delta2=table2array(result_high_delta2.CL);
+            cislope_high_delta2=table2array(result_high_delta2.CL); %get the estimated slope and its confidence interval
+            %we consider the slope to be significantly different than 0 
+            %if the lower bound of the confidence interval of the slope is higher than 0
             perf_cur_ar_delta1_high_delta2=perf_cur_ar_delta1_high_delta2+(cislope_high_delta2(1,2)>0);
             perf_cur_var_delta1_high_delta2=perf_cur_var_delta1_high_delta2+(cislope_high_delta2(2,2)>0);
 
@@ -54,12 +61,14 @@ for cur_delta1=1:n_delta1
             data_cur_low_delta2=[]; groups=[];
             for i=1:n_bursts
                 indexes_data_cur=indexes_data-(i-1)*(low_delta2+l_bursts);
-                data_cur_low_delta2=cat(1, data_big(indexes_data_cur,rep), data_cur_low_delta2);
-                groups=[repelem((n_bursts-i+1),l_bursts), groups];
+                data_cur_low_delta2=cat(1, data_big(indexes_data_cur,rep), data_cur_low_delta2); %subsample data from the big dataset
+                groups=[repelem((n_bursts-i+1),l_bursts), groups]; %create the indexes needed for generic_ews_fixed
             end
 
             result_low_delta2=generic_ews_fixed(data_cur_low_delta2,'grouping',groups','slopekind','ts');
-            cislope_low_delta2=table2array(result_low_delta2.CL);
+            cislope_low_delta2=table2array(result_low_delta2.CL); %get the estimated slope and its confidence interval
+            %we consider the slope to be significantly different than 0 
+            %if the lower bound of the confidence interval of the slope is higher than 0
             perf_cur_ar_delta1_low_delta2=perf_cur_ar_delta1_low_delta2+(cislope_low_delta2(1,2)>0);
             perf_cur_var_delta1_low_delta2=perf_cur_var_delta1_low_delta2+(cislope_low_delta2(2,2)>0);
 
@@ -70,6 +79,8 @@ for cur_delta1=1:n_delta1
     res_vars_linearreg_delta1(cur_delta1,1)=perf_cur_var_delta1_low_delta2/n_rep;  
     res_vars_linearreg_delta1(cur_delta1,2)=perf_cur_var_delta1_high_delta2/n_rep;  
 end
+
+%%%%%%%%%%%%% SAVE THE RESULT VECTORS
 
 result_final_delta1.res_vars_linearreg_delta1=res_vars_linearreg_delta1;
 result_final_delta1.res_ARs_linearreg_delta1=res_ARs_linearreg_delta1;
