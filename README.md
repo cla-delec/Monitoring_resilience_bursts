@@ -1,6 +1,6 @@
 ## Monitoring_resilience_bursts
 
-Codes to generate figure and results for the "Bursts: a powerful method for monitoring resilience" paper.
+Codes to generate the figures and results for the "Bursts: a powerful method for monitoring resilience" paper.
 
 # models
 Grind model used to generate the datasets
