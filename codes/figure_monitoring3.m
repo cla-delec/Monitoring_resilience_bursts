@@ -1,4 +1,4 @@
-%%%%%%%%%%%%% LOAD THE DATA
+%% LOAD THE DATA
 
 data_big=load("data/huge_dataset_vegetation_rep.mat");
 data_big=data_big.data_big;
@@ -8,7 +8,7 @@ length_tot=size(data_big,1);
 length_bursts=500;
 time=linspace(1,length_tot/3,length_tot);
 
-%%%%%%%%%%%%% PANELS B AND C - ROLLING WINDOW APPROACH
+%% PANELS B AND C - ROLLING WINDOW APPROACH
 %group 1: continous monitoring
 
 cur_res=48; %delta 1
@@ -33,9 +33,12 @@ hold off
 
 subplot(2,2,2)
 plot(index_gp1/3,ar,'Color',[0.074, 0.325, 0.866, 1],'LineWidth',2); %plot the autocorrelation calculated with generic_ews
-ylim([-0.15, 0.1]); 
+ylim([-0.1, 0.1]); 
 xlim([0, 8500]); 
-ylabel('Autocorrelation'); xlabel('Time (days)')
+xlabel('Time (days)')
+text(500,-0.01,{'p-value=0.02'}, 'FontSize', 12);
+%ylabel('Autocorrelation'); 
+ylabel('Autocorrelation');
 ax = gca; 
 ax.FontSize = 16; 
 set(gca,'ytick',[])
@@ -99,7 +102,7 @@ set(gca, 'box', 'off')
 % set(gca, 'box', 'off')
 % hold off
 
-%%%%%%%%%%%%% PANELS D AND E - BURSTS APPROACH
+%% PANELS D AND E - BURSTS APPROACH
 %group 3: 4 bursts of high resolution
 cur_bursts=4;
 cur_res=3; %delta 1
@@ -116,16 +119,19 @@ end
 
 groups=cat(1,repelem(1,l_bursts)',repelem(2,l_bursts)',repelem(3,l_bursts)',repelem(4,l_bursts)');
 res_burst=generic_ews_fixed(data_gp3(:),'grouping',groups,'slopekind','ts'); %calculate indicators and slope
-slope=table2array(res_burst.CL(1,1));
-slope_low=table2array(res_burst.CL(1,2)); slope_high=table2array(res_burst.CL(1,3));
+res_burst=res_burst.CL.tsslope;
+slope=table2array(res_burst('slope_AR','Estimated'));
+p_val=table2array(res_burst('slope_AR','p_value'));
+%slope_low=table2array(res_burst.CL.tsslope(1,2)); slope_high=table2array(res_burst.CL(1,3));
 
-ars=[0.42949,0.53268,0.59,0.7895];
+ar1=autocorr(data_gp3(:,1)); ar2=autocorr(data_gp3(:,2)); ar3=autocorr(data_gp3(:,3)); ar4=autocorr(data_gp3(:,4)); 
+ars=[ar1(2) ar2(2) ar3(2) ar4(2)];
 groups=[1 2 3 4];
 intercepts=ars-slope*groups; intercept=mean(intercepts);
 
 val_line=slope*groups+intercept;
-val_line_low=slope_low*groups+intercept;
-val_line_high=slope_high*groups+intercept;
+% val_line_low=slope_low*groups+intercept;
+% val_line_high=slope_high*groups+intercept;
 
 subplot(2,2,3)
 p=plot(time,data_big,'Color',[0.60, 0.60, 0.60, 1]); %plot whole dataset
@@ -144,16 +150,17 @@ subplot(2,2,4)
 box off
 plot(mean(indexes_gp3)/3,val_line,'Color',[0.886, 0.133, 0.254],'LineWidth',2); %plot slope
 hold on
-patch([mean(indexes_gp3)/3 fliplr(mean(indexes_gp3)/3)], [val_line fliplr(val_line)+val_line_high], [0.886, 0.133, 0.254], 'EdgeColor','none'); %plot ci of the slope
-patch([mean(indexes_gp3)/3 fliplr(mean(indexes_gp3)/3)], [val_line fliplr(val_line)-val_line_low], [0.886, 0.133, 0.254], 'EdgeColor','none');
-alpha(0.3)
+% patch([mean(indexes_gp3)/3 fliplr(mean(indexes_gp3)/3)], [val_line fliplr(val_line)+val_line_high], [0.886, 0.133, 0.254], 'EdgeColor','none'); %plot ci of the slope
+% patch([mean(indexes_gp3)/3 fliplr(mean(indexes_gp3)/3)], [val_line fliplr(val_line)-val_line_low], [0.886, 0.133, 0.254], 'EdgeColor','none');
+% alpha(0.3)
 scatter(mean(indexes_gp3)/3,ars,'marker','o','MarkerEdgeColor',[0.886, 0.133, 0.254]);
-ylim([0, 1.7]);
+ylim([0, 0.9]);
 ylabel('Autocorrelation'); xlabel('Time (days)')
 set(gca,'ytick',[])
 set(gca, 'box', 'off')
 ax = gca; 
 ax.FontSize = 16; 
+text(1000,0.08,{['p-value = ' num2str(p_val)]}, 'FontSize', 12);
 hold off
 
 % low_alpha=prctile(ews.ebitaus,5); high_alpha=prctile(ews.ebitaus,95);
