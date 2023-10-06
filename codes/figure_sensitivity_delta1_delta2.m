@@ -4,12 +4,12 @@
 
 %%%%%%%%%%%%% LOAD THE RESULTS
 
-result_final_delta1=load("data/sensitivity_delta1.mat");
+result_final_delta1=load("data/sensitivity_delta1_pval_3.mat");
 result_final_delta1=result_final_delta1.result_final_delta1;
 res_vars_linearreg_delta1=result_final_delta1.res_vars_linearreg_delta1;
 res_ARs_linearreg_delta1=result_final_delta1.res_ARs_linearreg_delta1;
 
-result_final_delta2=load("data/sensitivity_delta2.mat");
+result_final_delta2=load("data/sensitivity_delta2_pval_3.mat");
 result_final_delta2=result_final_delta2.result_final_delta2;
 res_vars_linearreg_delta2=result_final_delta2.res_vars_linearreg_delta2;
 res_ARs_linearreg_delta2=result_final_delta2.res_ARs_linearreg_delta2;
@@ -37,7 +37,7 @@ deltas1_days=values_delta1/3; %convert the intervals in days
 
 colors=[[0.2275,0.6902,1]; [1, 0.7098, 0.3843]; [0.9725, 0.4549, 0.4549]; [0.2431, 0.7804, 0.0431]];
 
-subplot(2,2,1)
+subplot(2,2,3)
 for i=1:2
    hold on
    plot(delta_c_values,res_ARs_linearreg_delta2(:,i),'Color',colors(i,:),'LineStyle','-','LineWidth',3)
@@ -47,7 +47,7 @@ legend({'Low \Delta_1 (1 day)','High \Delta_1 (3 days)'}, 'Location','southeast'
 title('Autocorrelation')
 hold off
 
-subplot(2,2,2)
+subplot(2,2,4)
 for i=1:2
    hold on
    plot(delta_c_values,res_vars_linearreg_delta2(:,i),'Color',colors(i,:),'LineStyle','-','LineWidth',3)
@@ -57,7 +57,7 @@ legend({'Low \Delta_1 (1 day)','High \Delta_1 (3 days)'}, 'Location','southeast'
 title('Variance')
 hold off
 
-subplot(2,2,3)
+subplot(2,2,1)
 for i=1:2
    hold on
    plot(deltas1_days,res_ARs_linearreg_delta1(:,i),'Color',colors(i,:),'LineStyle','-','LineWidth',3)
@@ -67,7 +67,7 @@ legend({'low \Delta_c  (0.1)','high \Delta_c (0.88)'}, 'Location','southeast');
 title('Autocorrelation')
 hold off
 
-subplot(2,2,4)
+subplot(2,2,2)
 for i=1:2
    hold on
    plot(deltas1_days,res_vars_linearreg_delta1(:,i),'Color',colors(i,:),'LineStyle','-','LineWidth',3)

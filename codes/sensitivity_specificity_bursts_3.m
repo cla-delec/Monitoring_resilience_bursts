@@ -1,4 +1,4 @@
-%%%%%%%%%%%%% LOAD THE DATA
+%% LOAD THE DATA
 
 %stationary data to calculate true positive rate
 data_stationary=load('data/huge_dataset_vegetation_stationary_measurement_error_rep.mat');
@@ -9,7 +9,7 @@ data_stationary=data_stationary.data_big_measurement_error_stationary;
 data_moving=load('data/huge_dataset_vegetation_measurement_error_rep.mat');
 data_moving=data_moving.data_big_measurement_error;
 
-%%%%%%%%%%%%% SIMULATION PARAMETERS
+%% SIMULATION PARAMETERS
 length_tot=size(data_moving,1);
 n_rep=size(data_moving,2); %number of repetitions
 cur_res=3; %daily resolution
@@ -20,13 +20,13 @@ n_bursts=size(bursts,2);
 
 length_bursts=1000; %total length of data collected
 
-%%%%%%%%%%%%% RESULT VECTORS
+%% RESULT VECTORS
 sensitivity_ARs_linearreg=zeros(n_bursts,1);
 sensitivity_vars_linearreg=zeros(n_bursts,1);
 specificity_ARs_linearreg=zeros(n_bursts,1);
 specificity_vars_linearreg=zeros(n_bursts,1);
 
-%%%%%%%%%%%%% SIMULATION
+%% SIMULATION
 for cur_bursts=bursts
 
     sens_cur_var=0; sens_cur_var_sc2=0; sens_cur_var_sc3=0;
@@ -46,16 +46,16 @@ for cur_bursts=bursts
             ews=generic_ews(data_moving_cur_sc1,'indicators',{'AR','std'},'silent',true,'ebisuzaki',100); %calculate the ebi p_val
             pval=ews.pvalues;
 
-            sens_cur_ar=sens_cur_ar+(pval(1)<=0.1);
-            sens_cur_var=sens_cur_var+(pval(2)<=0.1);
+            sens_cur_ar=sens_cur_ar+(pval(1)<=0.05);
+            sens_cur_var=sens_cur_var+(pval(2)<=0.05);
             
             %measure of the true negative rate
             data_stationary_cur_sc1=data_stationary((length_tot-cur_res*length_bursts):cur_res:length_tot,rep); %subsample from big time series
             ews=generic_ews(data_stationary_cur_sc1,'indicators',{'AR','std'},'silent',true,'ebisuzaki',100);
             pval=ews.pvalues;
 
-            spec_cur_ar=spec_cur_ar+(pval(1)>0.1);
-            spec_cur_var=spec_cur_var+(pval(2)>0.1);
+            spec_cur_ar=spec_cur_ar+(pval(1)>0.05);
+            spec_cur_var=spec_cur_var+(pval(2)>0.05);
             
             %%% SCENARIO B Different resolution but same gradient of c
             %%% (from beginning to end)
@@ -66,16 +66,16 @@ for cur_bursts=bursts
             ews=generic_ews(data_moving_cur_sc2,'indicators',{'AR','std'},'silent',true,'ebisuzaki',100);
             pval=ews.pvalues;
 
-            sens_cur_ar_sc2=sens_cur_ar_sc2+(pval(1)<=0.1);
-            sens_cur_var_sc2=sens_cur_var_sc2+(pval(2)<=0.1);
+            sens_cur_ar_sc2=sens_cur_ar_sc2+(pval(1)<=0.05);
+            sens_cur_var_sc2=sens_cur_var_sc2+(pval(2)<=0.05);
             
             %measure of the specificity
             data_stationary_cur_sc2=data_stationary(1:res_sc2:length_tot,rep); %subsample from big time series
             ews=generic_ews(data_stationary_cur_sc2,'indicators',{'AR','std'},'silent',true,'ebisuzaki',100);
             pval=ews.pvalues;
 
-            spec_cur_ar_sc2=spec_cur_ar_sc2+(pval(1)>0.1);
-            spec_cur_var_sc2=spec_cur_var_sc2+(pval(2)>0.1);
+            spec_cur_ar_sc2=spec_cur_ar_sc2+(pval(1)>0.05);
+            spec_cur_var_sc2=spec_cur_var_sc2+(pval(2)>0.05);
             
             %%% SCENARIO C Same resolution and gradient, thus more data
             %%% points
@@ -85,8 +85,8 @@ for cur_bursts=bursts
             ews=generic_ews(data_moving_cur_sc3,'indicators',{'AR','std'},'silent',true,'ebisuzaki',100);
             pval=ews.pvalues;
 
-            sens_cur_ar_sc3=sens_cur_ar_sc3+(pval(1)<=0.1);
-            sens_cur_var_sc3=sens_cur_var_sc3+(pval(2)<=0.1);
+            sens_cur_ar_sc3=sens_cur_ar_sc3+(pval(1)<=0.05);
+            sens_cur_var_sc3=sens_cur_var_sc3+(pval(2)<=0.05);
             
             %measure of the specificity
             data_stationary_cur_sc3=data_stationary(1:cur_res:length_tot,rep); %subsample from big dataset, from beginning to end with current resolution
@@ -116,21 +116,29 @@ for cur_bursts=bursts
 
             %result for sensitivity
             result_moving=generic_ews_fixed(data_cur_moving,'grouping',index','slopekind','ts');
-            cislope_moving=table2array(result_moving.CL);
-            sens_cur_ar=sens_cur_ar+(cislope_moving(1,2)>0);
-            sens_cur_var=sens_cur_var+(cislope_moving(2,2)>0);
+%             cislope_moving=table2array(result_moving.CL);
+%             sens_cur_ar=sens_cur_ar+(cislope_moving(1,2)>0);
+%             sens_cur_var=sens_cur_var+(cislope_moving(2,2)>0);
+            res_slope_moving=result_moving.CL.tsslope;
+            sens_cur_ar=sens_cur_ar+(table2array(res_slope_moving('slope_AR','p_value'))<0.05);
+            sens_cur_var=sens_cur_var+(table2array(res_slope_moving('slope_std','p_value'))<0.05);
+
             
             %result for specificity
             result_stat=generic_ews_fixed(data_cur_stat,'grouping',index','slopekind','ts');
-            cislope_stat=table2array(result_stat.CL);
+%             cislope_stat=table2array(result_stat.CL);
             
-            if cislope_stat(1,2)<=0 && cislope_stat(1,3)>=0
-                spec_cur_ar=spec_cur_ar+1;
-            end 
-            
-            if cislope_stat(2,2)<=0 && cislope_stat(2,3)>=0
-                spec_cur_var=spec_cur_var+1; 
-            end 
+%             if cislope_stat(1,2)<=0 && cislope_stat(1,3)>=0
+%                 spec_cur_ar=spec_cur_ar+1;
+%             end 
+%             
+%             if cislope_stat(2,2)<=0 && cislope_stat(2,3)>=0
+%                 spec_cur_var=spec_cur_var+1; 
+%             end 
+            res_slope_stat=result_stat.CL.tsslope;
+            spec_cur_ar=spec_cur_ar+(table2array(res_slope_stat('slope_AR','p_value'))>0.05);
+            spec_cur_var=spec_cur_var+(table2array(res_slope_stat('slope_std','p_value'))>0.05);
+
         end  
     end
     
@@ -159,15 +167,16 @@ for cur_bursts=bursts
 end
 
 
-% %%%%%%%%%%%%% LOAD RESULTS 
-% result_final=load("data/sensitivity_specificity_bursts3.mat");
-% result_final=result_final.result_final;
-% sensitivity_ARs_linearreg=result_final.sensitivity_ar;
-% sensitivity_vars_linearreg=result_final.sensitivity_var;
-% specificity_ARs_linearreg=result_final.specificity_ar;
-% specificity_vars_linearreg=result_final.specificity_var;
+%% LOAD RESULTS 
+result_final=load("data/sensitivity_specificity_bursts3_pval_2.mat");
+result_final=result_final.result_final;
+sensitivity_ARs_linearreg=result_final.sensitivity_ar;
+sensitivity_vars_linearreg=result_final.sensitivity_var;
+specificity_ARs_linearreg=result_final.specificity_ar;
+specificity_vars_linearreg=result_final.specificity_var;
 
-%%%%%%%%%%%%% PLOT RESULTS 
+
+%% PLOT RESULTS 
 
 res_sens=cat(2,sensitivity_ARs_linearreg,sensitivity_vars_linearreg);
 res_spec=cat(2,specificity_ARs_linearreg,specificity_vars_linearreg);
@@ -180,11 +189,12 @@ subplot(5,1,[1:2])
 b=bar(res_sens);
 b(1).FaceColor=[0.2275,0.6902,1];
 b(2).FaceColor=[1, 0.7098, 0.3843];
-xticklabels({'A','B','C','','2','3','4','5','6','7','8'})
+xticklabels({'I','II','III','','2','3','4','5','6','7','8'})
 xlabel('Number of bursts')
 ylabel('True positive rate')
 ax = gca; 
 ax.FontSize = 16; 
+set(gca, 'ytick', 0:0.2:1);
 
 subplot(5,1,3)
 b=bar(zeros(3,2));
@@ -202,16 +212,17 @@ subplot(5,1,[4:5])
 b=bar(res_spec);
 b(1).FaceColor=[0.2275,0.6902,1];
 b(2).FaceColor=[1, 0.7098, 0.3843];
-xticklabels({'A','B','C','','2','3','4','5','6','7','8'})
+xticklabels({'I','II','III','','2','3','4','5','6','7','8'})
 xlabel('Number of bursts')
 ylabel('True negative rate')
 ax = gca; 
 ax.FontSize = 16; 
+set(gca, 'ytick', 0:0.2:1)
 
-%%%%%%%%%%%%% SAVE RESULTS 
-% 
-% result_final.sensitivity_ar=sensitivity_ARs_linearreg;
-% result_final.sensitivity_var=sensitivity_vars_linearreg;
-% result_final.specificity_ar=specificity_ARs_linearreg;
-% result_final.specificity_var=specificity_vars_linearreg;
-% save("data/sensitivity_specificity_bursts3.mat","result_final");
+%% SAVE RESULTS 
+
+result_final.sensitivity_ar=sensitivity_ARs_linearreg;
+result_final.sensitivity_var=sensitivity_vars_linearreg;
+result_final.specificity_ar=specificity_ARs_linearreg;
+result_final.specificity_var=specificity_vars_linearreg;
+save("data/sensitivity_specificity_bursts3_pval_2.mat","result_final");

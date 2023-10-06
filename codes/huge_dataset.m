@@ -1,6 +1,6 @@
 %Model: harvesting2_noise_inc.ini
 %load from Models/Overharvesting_model
-%The model has been implemented with frind for matlab
+%The model has been implemented with grind for matlab
 %https://git.wageningenur.nl/sparcs/grind-for-matlab/-/tree/current-version
 
 nrep=100; %number of repetitions

@@ -54,12 +54,17 @@ for ind_cur_delta2=1:n_delta2
             end
 
             result_low_delta1=generic_ews_fixed(data_cur_low_delta1,'grouping',groups','slopekind','ts');
-            cislope_low_delta1=table2array(result_low_delta1.CL);
+%             cislope_low_delta1=table2array(result_low_delta1.CL);
+%             
+%             %we consider the slope to be significantly different than 0 
+%             %if the lower bound of the confidence interval of the slope is higher than 0
+%             perf_cur_ar_delta2_low_delta1=perf_cur_ar_delta2_low_delta1+(cislope_low_delta1(1,2)>0);
+%             perf_cur_var_delta2_low_delta1=perf_cur_var_delta2_low_delta1+(cislope_low_delta1(2,2)>0);
+            res_slope_low_delta1=result_low_delta1.CL.tsslope;
+            perf_cur_ar_delta2_low_delta1=perf_cur_ar_delta2_low_delta1+(table2array(res_slope_low_delta1('slope_AR','p_value'))<0.05);
+            perf_cur_var_delta2_low_delta1=perf_cur_var_delta2_low_delta1+(table2array(res_slope_low_delta1('slope_std','p_value'))<0.05);
             
-            %we consider the slope to be significantly different than 0 
-            %if the lower bound of the confidence interval of the slope is higher than 0
-            perf_cur_ar_delta2_low_delta1=perf_cur_ar_delta2_low_delta1+(cislope_low_delta1(1,2)>0);
-            perf_cur_var_delta2_low_delta1=perf_cur_var_delta2_low_delta1+(cislope_low_delta1(2,2)>0);
+
 
             %%% for high delta 1
             indexes_data=round(linspace(length_tot-l_bursts*high_delta1,length_tot,l_bursts)); %indexes data last burst 
@@ -72,12 +77,17 @@ for ind_cur_delta2=1:n_delta2
             end
 
             result_high_delta1=generic_ews_fixed(data_cur_high_delta1,'grouping',groups','slopekind','ts');
-            cislope_high_delta1=table2array(result_high_delta1.CL);
-            
-            %we consider the slope to be significantly different than 0 
-            %if the lower bound of the confidence interval of the slope is higher than 0
-            perf_cur_ar_delta2_high_delta1=perf_cur_ar_delta2_high_delta1+(cislope_high_delta1(1,2)>0);
-            perf_cur_var_delta2_high_delta1=perf_cur_var_delta2_high_delta1+(cislope_high_delta1(2,2)>0);
+%             cislope_high_delta1=table2array(result_high_delta1.CL);
+%             
+%             %we consider the slope to be significantly different than 0 
+%             %if the lower bound of the confidence interval of the slope is higher than 0
+%             perf_cur_ar_delta2_high_delta1=perf_cur_ar_delta2_high_delta1+(cislope_high_delta1(1,2)>0);
+%             perf_cur_var_delta2_high_delta1=perf_cur_var_delta2_high_delta1+(cislope_high_delta1(2,2)>0);
+            res_slope_high_delta1=result_high_delta1.CL.tsslope;
+            perf_cur_ar_delta2_high_delta1=perf_cur_ar_delta2_high_delta1+(table2array(res_slope_high_delta1('slope_AR','p_value'))<0.05);
+            perf_cur_var_delta2_high_delta1=perf_cur_var_delta2_high_delta1+(table2array(res_slope_high_delta1('slope_std','p_value'))<0.05);
+  
+
 
     end  
         
@@ -91,4 +101,4 @@ end
 
 result_final_delta2.res_vars_linearreg_delta2=res_vars_linearreg_delta2;
 result_final_delta2.res_ARs_linearreg_delta2=res_ARs_linearreg_delta2;
-save("data/sensitivity_delta2.mat","result_final_delta2");
+save("data/sensitivity_delta2_pval_3.mat","result_final_delta2");
